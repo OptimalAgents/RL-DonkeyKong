@@ -19,7 +19,7 @@ assert isinstance(
 ), "only discrete action space is supported"
 
 q_network = QNetwork(envs).to(device)
-q_network.load_state_dict(torch.load("./models/model.pth"))
+q_network.load_state_dict(torch.load("./models/modelL1.pth"))
 q_network.eval()
 
 # TRY NOT TO MODIFY: start the game

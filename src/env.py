@@ -156,7 +156,7 @@ def create_base_env() -> gym.Env:
     env = gym.make("ALE/DonkeyKong-v5", render_mode="rgb_array")
     env.action_space = gym.spaces.Discrete(10)  # 10 actions and noop
     env = EpisodicLifeEnv(env)
-    # env = LevelIncentive(env)
+    env = LevelIncentive(env)
     env = PunishDeath(env)
     env = PunishNeedlessJump(env)
     # env = InsentiveLadder(env)
