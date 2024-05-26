@@ -15,7 +15,7 @@ from stable_baselines3.common.atari_wrappers import (
     FireResetEnv,
     NoopResetEnv,
 )
-from src.utils import MARIO_COLOR, find_mario
+from src.utils import MARIO_COLOR, find_mario, is_barrel_near, ladder_close
 
 
 FIRST_LEVEL_Y = 158
@@ -101,10 +101,8 @@ class PunishNeedlessJump(gym.Wrapper):
         if self.prev_observation is None:
             self.prev_observation = state
 
-        mario_prev = find_mario(self.prev_observation)
-        mario = find_mario(state)
-        if (action == 1) and (mario[0] < mario_prev[0]):  # Jump
-            if reward != 100:  # If not jump over barrel
+        if (action == 1) and not ladder_close(self.prev_observation):  # Jump
+            if not is_barrel_near(self.prev_observation):  # If not jump over barrel
                 reward += -20
 
         return state, reward, terminated, truncated, info
@@ -114,12 +112,25 @@ STAR_LIST = [
     (187, 61),
     (187, 74),
     (187, 89),
-    (187, 110),
-    (167, 110),
-    (167, 110),
-    (161, 82),
-    (159, 49),
-    (148, 82),
+    (183, 102),
+    (174, 110),
+    (160, 110),
+    (160, 99),
+    (160, 85),
+    (131, 81),
+    (131, 89),
+    (104, 89),
+    (104, 82),
+    (104, 73),
+    (77, 71),
+    (75, 87),
+    (75, 100),
+    (67, 110),
+    (50, 110),
+    (50, 97),
+    (50, 85),
+    (43, 78),
+    (25, 76)
 ]
 
 
@@ -160,7 +171,7 @@ def create_base_env() -> gym.Env:
     env = PunishDeath(env)
     env = PunishNeedlessJump(env)
     # env = InsentiveLadder(env)
-    # env = IncentiveMagicStars(env)
+    env = IncentiveMagicStars(env)
     env = TransformReward(env, lambda r: r / 10.0)
     return env
 
