@@ -49,7 +49,7 @@ def main():
             return
 
     env = build_base_env(
-        magic_stars_incentive=True,
+        level_incentive=True,
     )
     env = convert_to_playable_env(env)
     play(env, fps=30, zoom=5, keys_to_action=KEY_MAPPING, callback=callback)

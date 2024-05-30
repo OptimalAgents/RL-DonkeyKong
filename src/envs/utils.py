@@ -64,3 +64,22 @@ def is_mario_on_ladder(mario: Tuple[int, int]) -> bool:
     if LADDER_MASK[mario[0], mario[1]] == 1:
         return True
     return False
+
+
+ZERO_LEVEL_Y = 178
+FIRST_LEVEL_Y = 158
+SECOND_LEVEL_Y = 131
+THIRD_LEVEL_Y = 104
+FOURTH_LEVEL_Y = 77
+FIFTH_LEVEL_Y = 50
+
+LEVEL_ARRAY = np.ones(ZERO_LEVEL_Y + 1) * 5  # Start all at 5
+LEVEL_ARRAY[FIFTH_LEVEL_Y + 1 :] = 4  # Below fifth level is 4
+LEVEL_ARRAY[FOURTH_LEVEL_Y + 1 :] = 3  # etc
+LEVEL_ARRAY[THIRD_LEVEL_Y + 1 :] = 2
+LEVEL_ARRAY[SECOND_LEVEL_Y + 1 :] = 1
+LEVEL_ARRAY[FIRST_LEVEL_Y + 1 :] = 0
+
+
+def get_level(mario_y: int) -> int:
+    return LEVEL_ARRAY[mario_y]

@@ -3,9 +3,7 @@ import gymnasium as gym
 from gymnasium.core import WrapperObsType
 
 from src.envs.utils import find_mario
-
-FIRST_LEVEL_Y = 158
-INBETWEEN_LEVEL_Y = 27
+from src.envs.utils import get_level
 
 
 class LevelIncentive(gym.Wrapper):
@@ -17,15 +15,10 @@ class LevelIncentive(gym.Wrapper):
     def update_level(self, mario_pos: Tuple[int, int]):
         mario_y = mario_pos[0]
         prev_level = self.level
-        if prev_level == 0 and mario_y <= FIRST_LEVEL_Y:
-            prev_level = 1
-            print("Level ", prev_level, mario_pos)
-        if prev_level > 0:
-            if mario_y <= (FIRST_LEVEL_Y - INBETWEEN_LEVEL_Y * prev_level):
-                prev_level += 1
-        if prev_level > self.level:
-            self.level = prev_level
-            print("Level ", prev_level, mario_pos)
+        curr_level = get_level(mario_y)
+        if curr_level > prev_level:
+            self.level = curr_level
+            print("Level ", curr_level, mario_pos)
             return self.level_reward
         return 0
 

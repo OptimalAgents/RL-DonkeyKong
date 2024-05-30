@@ -3,19 +3,12 @@ from __future__ import annotations
 import gymnasium as gym
 import numpy as np
 
+from src.envs.utils import get_level
 from src.Agents import RLAgent
 from src.utils import (
     find_mario,
     CustomActions,
 )
-
-FIRST_LEVEL_Y = 158
-SECOND_LEVEL_Y = 131
-THIRD_LEVEL_Y = 104
-FOURTH_LEVEL_Y = 77
-FIFTH_LEVEL_Y = 50
-
-INBETWEEN_LEVEL_Y = 27
 
 
 def preprocess_observation(observation):
@@ -47,22 +40,9 @@ class ActionProbabilityModifier(gym.Wrapper):
         if self.episode_counter % 2 == 0 and self.x < 5:
             self.x += 1
 
-    def get_level(self, mario_y: int) -> int:
-        if FIRST_LEVEL_Y - INBETWEEN_LEVEL_Y < mario_y <= FIRST_LEVEL_Y:
-            return 1
-        elif SECOND_LEVEL_Y - INBETWEEN_LEVEL_Y < mario_y <= SECOND_LEVEL_Y:
-            return 2
-        elif THIRD_LEVEL_Y - INBETWEEN_LEVEL_Y < mario_y <= THIRD_LEVEL_Y:
-            return 3
-        elif FOURTH_LEVEL_Y - INBETWEEN_LEVEL_Y < mario_y <= FOURTH_LEVEL_Y:
-            return 4
-        elif FIFTH_LEVEL_Y - INBETWEEN_LEVEL_Y < mario_y <= FIFTH_LEVEL_Y:
-            return 5
-        return 0  # Ground level
-
     def choose_action(self, state, observation):
         mario_y = find_mario(observation)[0]
-        level = self.get_level(mario_y)
+        level = get_level(mario_y)
 
         rand_val = np.random.rand()
         prob_best_action = (90 + self.x) / 100.0
