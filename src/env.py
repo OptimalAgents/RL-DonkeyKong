@@ -4,21 +4,9 @@ import gymnasium as gym
 import numpy as np
 
 from src.envs.utils import get_level
-from src.Agents import RLAgent
-from src.utils import (
-    find_mario,
-    CustomActions,
-)
-
-
-def preprocess_observation(observation):
-    # Downsample by a factor of 8
-    downsampled = observation[::8, ::8]
-    # Normalize pixel values
-    normalized = (downsampled / 255).astype(np.float32)
-    # Flatten and hash the values to create a unique state index
-    hashed = hash(normalized.tobytes()) % 1000  # Hash and modulo to keep within range
-    return hashed
+from src.agents import RLAgent
+from src.envs.utils import find_mario
+from src.envs import ReducedActions
 
 
 class ActionProbabilityModifier(gym.Wrapper):
@@ -28,11 +16,11 @@ class ActionProbabilityModifier(gym.Wrapper):
         self.x = 0
         self.episode_counter = 0
         self.custom_actions = [
-            CustomActions.NOOP,
-            CustomActions.RIGHT,
-            CustomActions.LEFT,
-            CustomActions.UP,
-            CustomActions.JUMP,
+            ReducedActions.NOOP,
+            ReducedActions.RIGHT,
+            ReducedActions.LEFT,
+            ReducedActions.UP,
+            ReducedActions.JUMP,
         ]
 
     def update_x(self):
