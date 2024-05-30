@@ -1,6 +1,6 @@
 from typing import Any, Dict, SupportsFloat, Tuple
 import gymnasium as gym
-from gymnasium.core import ActType, Env, ObsType
+from gymnasium.core import ActType, Env, ObsType, WrapperObsType
 import numpy as np
 
 from src.envs.utils import MARIO_COLOR

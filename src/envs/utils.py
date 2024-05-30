@@ -37,9 +37,9 @@ def find_mario(observation: np.ndarray) -> Tuple[int, int]:
     return int(np.mean(xs)), int(np.mean(ys))
 
 
-def is_barrel_near(observation: np.ndarray) -> bool:  # mario 16x12 pixels, barrels 8x8
-    mario = find_mario(observation)
-    barrels = find_barrels(observation)
+def is_barrel_near_mario(
+    mario: Tuple[int, int], barrels: list[Tuple[int, int]]
+) -> bool:  # mario 16x12 pixels, barrels 8x8
     return any(
         mario[0] + 8 > barrel[0] > mario[0] - 1
         and mario[1] + 16 > barrel[1] > mario[1] - 16
@@ -60,8 +60,7 @@ LADDER_MASK[20:60, 76:80] = 1  # Sixth level
 LADDER_MASK[20:60, 32:36] = 1  # Sixth level
 
 
-def is_mario_on_ladder(observation: np.ndarray) -> bool:
-    mario_coords = find_mario(observation)
-    if LADDER_MASK[mario_coords[0], mario_coords[1]] == 1:
+def is_mario_on_ladder(mario: Tuple[int, int]) -> bool:
+    if LADDER_MASK[mario[0], mario[1]] == 1:
         return True
     return False

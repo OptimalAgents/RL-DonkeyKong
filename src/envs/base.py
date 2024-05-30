@@ -8,10 +8,17 @@ from gymnasium.wrappers.resize_observation import ResizeObservation
 from gymnasium.wrappers.transform_reward import TransformReward
 from stable_baselines3.common.atari_wrappers import EpisodicLifeEnv, FireResetEnv
 from src.envs.action_wrappers import ConvertDescreteActions, ReduceActionSpace
+from src.envs.state_wrappers import NormalizeObservations
+from src.envs.reward_modifiers import (
+    LevelIncentive,
+    LadderIncentive,
+    MagicStarsIncentive,
+    PunishDeath,
+    PunishNeedlessJump,
+)
 
 
 def build_base_env(
-    display: bool = False,
     level_incentive: bool = False,
     ladder_incentive: bool = False,
     magic_stars_incentive: bool = False,
@@ -19,8 +26,7 @@ def build_base_env(
     punish_needless_jump: bool = False,
 ) -> gym.Env:
     # Base setup
-    render_mode = "human" if display else "rgb_array"
-    env = gym.make("ALE/DonkeyKong-v5", render_mode=render_mode)
+    env = gym.make("ALE/DonkeyKong-v5", render_mode="rgb_array")
     env = ConvertDescreteActions(env)
     env = EpisodicLifeEnv(env)
     env = ReduceActionSpace(env)
@@ -47,6 +53,7 @@ def convert_to_trainable_env(
     env = RecordEpisodeStatistics(env)
     env = ResizeObservation(env, observation_shape)
     env = GrayScaleObservation(env)
+    env = NormalizeObservations(env)
     env = FrameStack(env, frame_stack)
     return env
 
@@ -59,5 +66,4 @@ def convert_to_eval_env(env: gym.Env, video_directory: Path) -> gym.Env:
 
 
 def convert_to_playable_env(env: gym.Env) -> gym.Env:
-    assert env.render_mode == "human"
     return env

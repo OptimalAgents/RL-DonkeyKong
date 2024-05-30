@@ -1,16 +1,13 @@
 import gymnasium as gym
-from envs.spaces import DiscreteSpace
+from src.envs.spaces import DiscreteSpace
 from enum import IntEnum
 
 
-class ConvertDescreteActions(gym.ActionWrapper):
+class ConvertDescreteActions(gym.Wrapper):
     def __init__(self, env):
         super().__init__(env)
         assert isinstance(env.action_space, gym.spaces.Discrete)
         self.action_space = DiscreteSpace(env.action_space.n)
-
-    def action(self, action):
-        return action
 
 
 class ReducedActions(IntEnum):
@@ -47,5 +44,5 @@ class ReduceActionSpace(gym.Wrapper):
         mapped_action = REDUCED_ACTION_MAP[action]
         return self.env.step(mapped_action)
 
-    def reset(self):
-        return self.env.reset()
+    def reset(self, *args, **kwargs):
+        return self.env.reset(*args, **kwargs)
