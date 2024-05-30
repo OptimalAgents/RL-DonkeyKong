@@ -1,5 +1,5 @@
 gymnasium[atari, accept-rom-license]
-numpy==1.24.3
+numpy==1.26.4
 opencv_python==4.9.0.80
 Pillow==10.3.0
 stable_baselines3==2.3.0

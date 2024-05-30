@@ -52,17 +52,18 @@ def find_barrels(observation: np.ndarray) -> List[Tuple[int, int]]:
         x_start, x_end = max(x - 8, 0), min(x + 8, 210)
         y_start, y_end = max(y - 8, 0), min(y + 8, 160)
         search_space = np.zeros((210, 160))
-        search_space[x_start: (x_end + 1), y_start: (y_end + 1)] = 1
+        search_space[x_start : (x_end + 1), y_start : (y_end + 1)] = 1
 
         current_barrel = np.logical_and(barrels_mask, search_space)
 
         xs, ys = np.where(current_barrel)
         barrels.append((int(np.mean(xs)), int(np.mean(ys))))
+        
         barrels_mask = np.logical_and(barrels_mask, np.logical_not(current_barrel))
 
     return barrels
 
-
+  
 def find_mario(observation: np.ndarray) -> Tuple[int, int]:
     mario_mask = np.all(observation == MARIO_COLOR, axis=-1)
     xs, ys = np.where(mario_mask)
@@ -72,10 +73,11 @@ def find_mario(observation: np.ndarray) -> Tuple[int, int]:
 def is_barrel_near(observation: np.ndarray) -> bool:  # mario 16x12 pixels, barrels 8x8
     mario = find_mario(observation)
     barrels = find_barrels(observation)
-    return any(mario[0] + 8 > barrel[0] > mario[0] - 1 and
-               mario[
-                   1] + 16 > barrel[1] > mario[1] - 16
-               for barrel in barrels)
+    return any(
+        mario[0] + 8 > barrel[0] > mario[0] - 1 and
+        mario[1] + 16 > barrel[1] > mario[1] - 16
+        for barrel in barrels
+    )
 
 
 def ladder_close(observation: np.ndarray) -> bool:

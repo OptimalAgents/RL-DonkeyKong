@@ -263,6 +263,13 @@ def train_sarsa_agent(env, agent, num_episodes=1000, max_steps_per_episode=1000)
     return agent
 
 
+from src.utils import MARIO_COLOR, find_mario, is_barrel_near, ladder_close
+
+
+FIRST_LEVEL_Y = 158
+INBETWEEN_LEVEL_Y = 27
+
+
 class LevelIncentive(gym.Wrapper):
     def __init__(self, env: gym.Env):
         super().__init__(env)
@@ -286,12 +293,14 @@ class LevelIncentive(gym.Wrapper):
     def step(self, action):
         observation, reward, terminated, truncated, info = self.env.step(action)
         mario = find_mario(observation)
+
+        # HACK: Skip frames until mario is visible
         if mario[0] > 30:
             reward += self.update_level(mario)
         return observation, reward, terminated, truncated, info
 
     def reset(
-            self, *, seed: int | None = None, options: Dict[str, Any] | None = None
+        self, *, seed: int | None = None, options: Dict[str, Any] | None = None
     ) -> Tuple[WrapperObsType, Dict[str, Any]]:
         self.level = 0
         return super().reset(seed=seed, options=options)
@@ -459,5 +468,5 @@ def create_trainable_env() -> gym.Env:
 
 
 if __name__ == "__main__":
-    env = create_base_env()  # Użyj create_base_env zamiast gym.make dla spójności
+    env = create_base_env()
     print(env)
