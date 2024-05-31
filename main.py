@@ -43,6 +43,10 @@ def main():
     videos_dir = run_dir / "videos"
     videos_dir.mkdir(parents=True, exist_ok=True)
 
+    # Save config
+    with open(run_dir / "config.json", "w") as f:
+        json.dump(vars(args), f)
+
     # Create env
     env = build_base_env(
         level_incentive=args.level_incentive,
@@ -146,10 +150,6 @@ def main():
 
     # Save eval rewards
     np.save(run_dir / "eval_rewards.npy", np.array(eval_rewards))
-
-    # Save config
-    with open(run_dir / "config.json", "w") as f:
-        json.dump(vars(args), f)
 
 
 if __name__ == "__main__":
