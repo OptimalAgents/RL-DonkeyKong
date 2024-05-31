@@ -2,12 +2,6 @@ import numpy as np
 from gymnasium.utils.play import play
 from src.envs.action_wrappers import ReducedActions
 from src.envs.base import build_base_env, convert_to_playable_env
-from src.envs.reward_modifiers import (
-    ladder_incentive,
-    level_incentive,
-    punish_death,
-    punish_needless_jump,
-)
 from src.envs.utils import find_mario
 
 KEY_MAPPING: dict[str, int] = {

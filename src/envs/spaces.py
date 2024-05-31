@@ -5,6 +5,7 @@ import numpy as np
 class DiscreteSpace(Discrete):
     def __init__(self, n: int):
         self.n = n
+        self.dtype = np.int64
 
     def sample(self, probs=None):
         if probs is None:

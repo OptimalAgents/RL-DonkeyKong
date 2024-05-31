@@ -163,3 +163,6 @@ cython_debug/
 models
 videos
 
+# Ignore models and .npy files
+agent.pth
+agent.npy
