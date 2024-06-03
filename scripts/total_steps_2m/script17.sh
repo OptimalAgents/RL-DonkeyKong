@@ -1,4 +1,5 @@
 #!/bin/bash
+sleep $((10 * $1))
 
 # sarsa with all (ladder, level, stars, punish_needless_jump, heuristic_actions)
 python -m src/main --agent sarsa \

@@ -1,4 +1,5 @@
 #!/bin/bash
+sleep $((10 * $1))
 
 # dqn with all (ladder, level, stars, punish_needless_jump, heuristic_actions) and more total_steps
 python -m src/main --agent dqn \

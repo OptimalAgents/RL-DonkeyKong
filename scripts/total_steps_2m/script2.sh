@@ -1,4 +1,5 @@
 #!/bin/bash
+sleep $((10 * $1))
 
 # dqn with level_incentive
 python -m src/main --agent dqn \

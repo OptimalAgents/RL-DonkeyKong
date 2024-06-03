@@ -1,4 +1,5 @@
 #!/bin/bash
+sleep $((10 * $1))
 
 # dqn with stars, level and ladder_incentive
 python -m main --agent dqn \

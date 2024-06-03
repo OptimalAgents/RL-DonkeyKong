@@ -1,4 +1,5 @@
 #!/bin/bash
+sleep $((10 * $1))
 
 # dqn with stars incentive
 python -m src/main --agent dqn \

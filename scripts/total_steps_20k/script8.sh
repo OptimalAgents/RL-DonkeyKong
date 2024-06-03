@@ -1,4 +1,5 @@
 #!/bin/bash
+sleep $((10 * $1))
 
 # dqn with punish_needless_jump +ladder+level
 python -m main --agent dqn \

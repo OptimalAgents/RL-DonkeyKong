@@ -1,0 +1,1 @@
+{"agent": "dqn", "gamma": 0.99, "total_steps": 20000, "eval_every": 1000, "training_starts": 1000, "epsilon_start": 1, "epsilon_end": 0.05, "epsilon_duration": 0.3, "ladder_incentive": true, "level_incentive": true, "stars_incentive": null, "punish_death": true, "punish_needless_jump": null, "heuristic_actions": null}

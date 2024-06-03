@@ -9,7 +9,7 @@ class SARSAAgent(RLAgent):
     def __init__(
         self,
         action_space: DiscreteSpace,
-        max_state_size: int = 1000,
+        max_state_size: int = 20_000,
         lr=0.1,
         gamma=0.99,
     ):
@@ -21,6 +21,7 @@ class SARSAAgent(RLAgent):
         self.q_table = np.zeros((max_state_size, action_space.n))
 
     def predict_action(self, state):
+        state = preprocess_observation(state, max_states=self.max_state_size)
         return np.argmax(self.q_table[state])
 
     def process_experience(self, state, action, reward, next_state, next_action):
