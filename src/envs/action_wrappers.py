@@ -44,5 +44,5 @@ class ReduceActionSpace(gym.Wrapper):
         mapped_action = REDUCED_ACTION_MAP[action]
         return self.env.step(mapped_action)
 
-    def reset(self, *args, **kwargs):
-        return self.env.reset(*args, **kwargs)
+    def reset(self, **kwargs):
+        return self.env.reset(**kwargs)

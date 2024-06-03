@@ -1,6 +1,7 @@
 from pathlib import Path
 import gymnasium as gym
 from stable_baselines3.common.buffers import ReplayBuffer
+import numpy as np
 from torch import nn
 import torch.nn.functional as F
 import torch
@@ -81,6 +82,7 @@ class DeepQLearningAgent(RLAgent):
         self.target_train_frequency = target_train_frequency
 
     def predict_action(self, state):
+        state = np.array(state, dtype=np.float32)
         q_values = self.q_network(torch.Tensor(state).to(self.device))
         action = torch.argmax(q_values).cpu().numpy()
         return int(action)

@@ -23,10 +23,8 @@ class LadderIncentive(gym.Wrapper):
             mario = find_mario(observation)
             if is_mario_on_ladder(mario):
                 if action == ReducedActions.UP and (mario[0] < self.prev_mario[0]):
-                    print("YO")
                     reward += self.up_ladder_reward
                 elif action == ReducedActions.DOWN and (mario[0] > self.prev_mario[0]):
-                    print("NO")
                     reward += self.down_ladder_reward
         self.prev_mario = find_mario(observation)
 
