@@ -114,9 +114,9 @@ def main():
         )
         if np.random.rand() < epsilon:
             # Epsilon exploration
-            action = action_sampler.choose_action(obs)
+            action = action_sampler.choose_action(env.snapshot)
         else:
-            action = agent.predict_action(obs)
+            action = agent.predict_action(env.snapshot)
 
         next_obs, reward, termination, truncation, info = env.step(action)
         done = termination or truncation

@@ -12,6 +12,21 @@ class NormalizeObservations(gym.ObservationWrapper):
         return observation / 255.0
 
 
+class StateSnapshot(gym.Wrapper):
+    def __init__(self, env):
+        super().__init__(env)
+        self.snapshot = None
+
+    def reset(self, *args, **kwargs):
+        self.snapshot = None
+        return self.env.reset(*args, **kwargs)
+
+    def step(self, action):
+        state, reward, done, info = self.env.step(action)
+        self.snapshot = state
+        return state, reward, done, info
+
+
 class BetterEpisodicLifeEnv(gym.Wrapper[np.ndarray, int, np.ndarray, int]):
     """
     Make end-of-life == end-of-episode, but only reset on true game over.

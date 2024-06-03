@@ -12,7 +12,11 @@ from stable_baselines3.common.atari_wrappers import (
     NoopResetEnv,
 )
 from src.envs.action_wrappers import ConvertDescreteActions, ReduceActionSpace
-from src.envs.state_wrappers import BetterEpisodicLifeEnv, NormalizeObservations
+from src.envs.state_wrappers import (
+    BetterEpisodicLifeEnv,
+    NormalizeObservations,
+    StateSnapshot,
+)
 from src.envs.reward_modifiers import (
     LevelIncentive,
     LadderIncentive,
@@ -35,6 +39,9 @@ def build_base_env(
     env = gym.make("ALE/DonkeyKong-v5", render_mode=render_mode)
     env = ConvertDescreteActions(env)
     env = ReduceActionSpace(env)
+    env = StateSnapshot(
+        env
+    )  # HACK: Do not remove this. This allows to access state before modifications
 
     if level_incentive:
         env = LevelIncentive(env)
