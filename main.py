@@ -116,7 +116,7 @@ def main():
             # Epsilon exploration
             action = action_sampler.choose_action(env.snapshot)
         else:
-            action = agent.predict_action(env.snapshot)
+            action = agent.predict_action(obs)
 
         next_obs, reward, termination, truncation, info = env.step(action)
         done = termination or truncation
