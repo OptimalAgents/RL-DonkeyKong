@@ -56,10 +56,12 @@ class DeepQLearningAgent(RLAgent):
         super().__init__(action_space)
         assert observation_space is not None, "Observation space must be provided"
 
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        # self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.device = torch.device("cpu")
+        print(self.device)
 
-        self.q_network = QNetwork(action_space)
-        self.target_q_network = QNetwork(action_space)
+        self.q_network = QNetwork(action_space).to(self.device)
+        self.target_q_network = QNetwork(action_space).to(self.device)
         self.target_q_network.load_state_dict(self.q_network.state_dict())
         self.target_q_network.eval()
 

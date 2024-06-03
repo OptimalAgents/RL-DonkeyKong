@@ -22,9 +22,9 @@ class StateSnapshot(gym.Wrapper):
         return self.env.reset(*args, **kwargs)
 
     def step(self, action):
-        state, reward, done, info = self.env.step(action)
+        state, reward, termination, truncation, info = self.env.step(action)
         self.snapshot = state
-        return state, reward, done, info
+        return state, reward, termination, truncation, info
 
 
 class BetterEpisodicLifeEnv(gym.Wrapper[np.ndarray, int, np.ndarray, int]):
