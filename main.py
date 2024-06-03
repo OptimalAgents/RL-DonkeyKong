@@ -28,7 +28,6 @@ def eval_agent(agent, env):
         action = agent.predict_action(obs)
         obs, reward, termination, truncation, info = env.step(action)
 
-        print(info)
         done = termination or truncation
     total_reward = info["episode"]["r"]
 
