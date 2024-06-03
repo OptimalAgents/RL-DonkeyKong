@@ -9,6 +9,7 @@ from gymnasium.utils.play import play
 from src.envs.base import build_base_env, convert_to_playable_env
 from play import KEY_MAPPING
 
+
 class GameRecorder:
     def __init__(self):
         self.data = {
@@ -50,10 +51,7 @@ class GameRecorder:
         }
 
     @staticmethod
-    def load_and_push_to_replay_buffer(file_path, buffer_size, observation_space, action_space, device):
-        with open(file_path, 'rb') as f:
-            data = pickle.load(f)
-
+    def load_and_push_to_replay_buffer(directory, buffer_size, observation_space, action_space, device):
         replay_buffer = ReplayBuffer(
             buffer_size=buffer_size,
             observation_space=observation_space,
@@ -63,16 +61,33 @@ class GameRecorder:
             handle_timeout_termination=False,
         )
 
-        for i in range(len(data['states']) - 1):
-            replay_buffer.add(
-                obs=data['states'][i],
-                next_obs=data['states'][i + 1],
-                action=data['actions'][i],
-                reward=data['rewards'][i],
-                done=data['dones'][i]
-            )
+        file_count = 0
+        for filename in os.listdir(directory):
+            file_path = os.path.join(directory, filename)
+            if os.path.isfile(file_path) and file_path.endswith('.pkl'):
+                with open(file_path, 'rb') as f:
+                    data = pickle.load(f)
 
-        print(f"Pushed {len(data['states']) - 1} transitions to the replay buffer")
+                for i in range(len(data['states']) - 1):
+                    action = np.array(data['actions'][i]).reshape((1,))  # Reshape action correctly
+                    replay_buffer.add(
+                        obs=np.array(data['states'][i]),
+                        next_obs=np.array(data['states'][i + 1]),
+                        action=action,
+                        reward=np.array([data['rewards'][i]]),  # Reward needs to be a numpy array
+                        done=np.array([data['dones'][i]]),  # Done flag needs to be a numpy array
+                        infos={}  # Add empty dictionary for infos
+                    )
+                file_count += 1
+
+        print(f"Pushed data from {file_count} files to the replay buffer")
+
+        # Print non-zero actions from the last pushed game to see if everything went well
+        last_actions = data['actions']
+        if last_actions is not None:
+            non_zero_actions = [action for action in last_actions if action != 0]
+            print("Non-zero actions from the last pushed game:", non_zero_actions)
+
         return replay_buffer
 
 
