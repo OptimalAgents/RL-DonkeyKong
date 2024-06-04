@@ -109,6 +109,41 @@ class DeepQLearningAgent(RLAgent):
         super().step_end_callback(step)
 
         if step > self.train_start:
+            if step % self.train_frequency == 0:
+                data = self.replay_buffer.sample(self.batch_size)
+
+                with torch.no_grad():
+                    target_max, _ = self.target_q_network(data.next_observations).max(
+                        dim=1
+                    )
+
+                    td_target = data.rewards.flatten() + self.gamma * target_max * (
+                            1 - data.dones.flatten()
+                    )
+                old_val = (
+                    self.q_network(data.observations).gather(1, data.actions).squeeze()
+                )
+                loss = F.mse_loss(td_target, old_val)
+
+                # optimize the model
+                self.optimizer.zero_grad()
+                loss.backward()
+                self.optimizer.step()
+
+            # Update target network
+            if step % self.target_train_frequency == 0:
+                for target_network_param, q_network_param in zip(
+                        self.target_q_network.parameters(), self.q_network.parameters()
+                ):
+                    target_network_param.data.copy_(
+                        self.tau * q_network_param.data
+                        + (1.0 - self.tau) * target_network_param.data
+                    )
+
+    def step_end_callback_edge_case(self, step: int):
+        super().step_end_callback(step)
+
+        if step > self.train_start:
             super().step_end_callback(step)
 
         if step > self.train_start:
