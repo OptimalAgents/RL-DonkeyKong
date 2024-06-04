@@ -2,7 +2,7 @@
 sleep $((10 * $1))
 
 # q_learning with all (ladder, level, stars, punish_needless_jump, heuristic_actions)
-python -m src/main --agent q_learning \
+python main.py --agent q_learning \
     --punish_needless_jump \
     --level_incentive \
     --ladder_incentive \

@@ -2,7 +2,7 @@
 sleep $((10 * $1))
 
 # dqn with stars incentive
-python -m src/main --agent dqn \
+python main.py --agent dqn \
     --stars_incentive \
     --total_steps 2000000 \
     --training_starts 80000 \

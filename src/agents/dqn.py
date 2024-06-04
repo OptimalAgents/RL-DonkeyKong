@@ -44,7 +44,7 @@ class DeepQLearningAgent(RLAgent):
         self,
         action_space: DiscreteSpace,
         observation_space: gym.Space = None,
-        buffer_size: int = 200_000,
+        buffer_size: int = 100_000,
         train_start: int = 1_000,
         train_frequency: int = 4,
         target_train_frequency: int = 1_000,

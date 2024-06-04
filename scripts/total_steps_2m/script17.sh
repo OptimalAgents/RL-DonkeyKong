@@ -2,7 +2,7 @@
 sleep $((10 * $1))
 
 # sarsa with all (ladder, level, stars, punish_needless_jump, heuristic_actions)
-python -m src/main --agent sarsa \
+python main.py --agent sarsa \
     --punish_needless_jump \
     --level_incentive \
     --ladder_incentive \

@@ -2,7 +2,7 @@
 sleep $((10 * $1))
 
 # dqn with all (ladder, level, stars, punish_needless_jump, heuristic_actions) and more total_steps
-python -m src/main --agent dqn \
+python main.py --agent dqn \
     --punish_needless_jump \
     --level_incentive \
     --ladder_incentive \
