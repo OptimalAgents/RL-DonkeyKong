@@ -27,8 +27,6 @@ If you want to train the agent, just run the `main.py` script. You can choose th
 
 If you want to play the game, run `play.py`. Start the game with `space` and move Mario using `W`, `S`, `A` and `D` keys.
 
-## Evaluation
-
 # Directory guide
 
 ## Structure
@@ -51,7 +49,6 @@ If you want to play the game, run `play.py`. Start the game with `space` and mov
 ├── LICENSE
 ├── README.md
 ├── donkey_kong.png
-├── eval.py
 ├── main.py
 ├── play.py
 ├── presentation.pptx
