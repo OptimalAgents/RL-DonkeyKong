@@ -9,12 +9,41 @@ from src.agents.qlearning import QLearningAgent
 from src.agents.sarsa import SARSAAgent
 from tqdm.auto import tqdm
 
-from src.envs.base import build_base_env, convert_to_eval_env, convert_to_trainable_env
+from src.envs.base import (
+    build_base_env,
+    convert_to_eval_env,
+    convert_to_trainable_env,
+)
 
 
 def linear_schedule(start_e: float, end_e: float, duration: int, t: int):
     slope = (end_e - start_e) / duration
     return max(slope * t + start_e, end_e)
+
+
+def eval_agent(agent, env):
+    obs, _ = env.reset(seed=44)
+    done = False
+    while not done:
+        action = agent.predict_action(obs)
+        obs, reward, termination, truncation, info = env.step(action)
+
+        done = termination or truncation
+    total_reward = info["episode"]["r"]
+
+    print(f"Eval episode finished with reward: {total_reward}")
+    return total_reward
+
+
+def create_env_from_args(args, **kwargs):
+    return build_base_env(
+        level_incentive=args.level_incentive,
+        ladder_incentive=args.ladder_incentive,
+        magic_stars_incentive=args.stars_incentive,
+        punish_death=args.punish_death,
+        punish_needless_jump=args.punish_needless_jump,
+        **kwargs,
+    )
 
 
 def main():
@@ -25,8 +54,8 @@ def main():
     parser.add_argument("--eval_every", default=10_000, type=int)
     parser.add_argument("--training_starts", default=84_000, type=int)
     parser.add_argument("--epsilon_start", default=1, type=float)
-    parser.add_argument("--epsilon_end", default=0.01, type=float)
-    parser.add_argument("--epsilon_duration", default=0.1, type=float)
+    parser.add_argument("--epsilon_end", default=0.05, type=float)
+    parser.add_argument("--epsilon_duration", default=0.3, type=float)
     parser.add_argument("--ladder_incentive", action=argparse.BooleanOptionalAction)
     parser.add_argument("--level_incentive", action=argparse.BooleanOptionalAction)
     parser.add_argument("--stars_incentive", action=argparse.BooleanOptionalAction)
@@ -48,15 +77,9 @@ def main():
         json.dump(vars(args), f)
 
     # Create env
-    env = build_base_env(
-        level_incentive=args.level_incentive,
-        ladder_incentive=args.ladder_incentive,
-        magic_stars_incentive=args.stars_incentive,
-        punish_death=args.punish_death,
-        punish_needless_jump=args.punish_needless_jump,
-    )
-    env = convert_to_trainable_env(env)
-    eval_env = convert_to_eval_env(env, videos_dir)
+    base_env = create_env_from_args(args)
+    env = convert_to_trainable_env(base_env)
+    eval_env = convert_to_eval_env(create_env_from_args(args), videos_dir)
 
     # Create agent
     if args.agent == "dqn":
@@ -91,7 +114,7 @@ def main():
         )
         if np.random.rand() < epsilon:
             # Epsilon exploration
-            action = action_sampler.choose_action(obs)
+            action = action_sampler.choose_action(env.snapshot)
         else:
             action = agent.predict_action(obs)
 
@@ -133,14 +156,13 @@ def main():
 
         # Eval step
         if global_step % args.eval_every == 0:
-            obs, _ = eval_env.reset()
-            done = False
-            while not done:
-                action = agent.predict_action(obs)
-                obs, reward, termination, truncation, info = eval_env.step(action)
-                done = termination or truncation
-            eval_env.reset()
-            eval_rewards.append(info["episode"]["r"])
+            eval_rewards.append(eval_agent(agent, eval_env))
+
+    # Last eval
+    eval_rewards.append(eval_agent(agent, eval_env))
+
+    env.close()
+    eval_env.close()
 
     # Save agent
     if args.agent == "dqn":

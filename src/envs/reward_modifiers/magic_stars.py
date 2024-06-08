@@ -56,8 +56,6 @@ class MagicStarsIncentive(gym.Wrapper):
         self.stars_mask[collected_stars] = 0
         return observation, reward, terminated, truncated, info
 
-    def reset(
-        self, *, seed: int | None = None, options: dict[str, Any] | None = None
-    ) -> Tuple[WrapperObsType, Dict[str, Any]]:
+    def reset(self, *args, **kwargs) -> Tuple[WrapperObsType, Dict[str, Any]]:
         self.stars_mask = self.create_stars_mask()
-        return super().reset(seed=seed, options=options)
+        return self.env.reset(*args, **kwargs)

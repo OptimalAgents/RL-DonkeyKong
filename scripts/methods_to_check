@@ -1,0 +1,37 @@
+--agent #'dqn', 'q_learning' or 'sarsa'
+--gamma #default=0.99
+--total_steps
+--eval_every
+--training_starts
+--epsilon_start #default=1
+--epsilon_end #default=0.01
+--epsilon_duration #default=0.1
+--ladder_incentive #reward for moving up on the ladder
+--level_incentive #reward for new new levels
+--stars_incentive #reward for checkpoints
+--punish_death
+--punish_needless_jump #negative reward for needless jumps
+--heuristic_actions #ladder climbing, left or right moves depending on the level
+
+#check for different agents, eps, gamma, training_starts, rewards systems
+DQN/WITH PUNISH DEATH/GAMMA(0.99)/TRAINING STARTS(8.4% total_steps)/EPSILON_END(0.01):
+1. dqn without anything
+2. dqn with level_incentive
+3. dqn with ladder and level_incentive
+4. dqn with stars incentive
+5. dqn with stars, level and ladder_incentive
+6. dqn with punish_needless_jump
+7. 6 + heuristic_actions
+8. 6+ladder+level
+9. 6+stars
+10. 6+stars+level+ladder
+11. dqn with heuristic_actions
+12. all (ladder, level, stars, punish_needless_jump, heuristic_actions)
+13. all with epsilon_end=0.04
+14. all with gamma=0.9
+15. all without punish_death
+16. q_learning with all
+17. sarsa with all
+
+
+
