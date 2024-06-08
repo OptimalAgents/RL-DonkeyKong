@@ -21,7 +21,11 @@ This guide provides instructions on how to execute the functions included in thi
 
 ## Training agent
 
+If you want to train the agent, just run the `main.py` script. You can choose the algorithm between `q-learning` and `sarsa`. We recommend using the default option which is `q-learning`. 
+
 ## Playing the game
+
+If you want to play the game, run `play.py`. Start the game with `space` and move Mario using `W`, `S`, `A` and `D` keys.
 
 ## Evaluation
 
@@ -29,7 +33,37 @@ This guide provides instructions on how to execute the functions included in thi
 
 ## Structure
 
+```bash
+├── reward_plots
+    ├── eval_rewards
+    ├── plots
+    ├── reward_plots.ipynb
+├── src
+    ├── methods
+    │   ├── __init__.py
+    │   ├── dqn
+    ├── Agents.py
+    ├── __init__.py
+    ├── env.py
+    ├── utils.py
+├── videos_for_presentation
+├── .gitignore
+├── LICENSE
+├── README.md
+├── donkey_kong.png
+├── eval.py
+├── main.py
+├── play.py
+├── presentation.pptx
+├── requirements.txt
+```
+
+
 ## Description of directories
+
+* reward_plots - directory with data and code for generating plots of reward over time including the plots.
+* src - directory with all the code needed to train the agent.
+* videos_for_presentation - directory with all the videos of the trained agent "playing" the game used in `presentation.pptx`.
 
 ## Notes
 
