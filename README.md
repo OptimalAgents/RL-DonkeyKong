@@ -1,4 +1,35 @@
-# RL-DonkeyKong
+# Human level performance of an AI playing Donkey Kong
+
+This repository contains a project that aims to train a reinforcement learning model to play the video game Donkey Kong using Deep Q-Networks (DQN). In this game the player takes on the role of Mario and tries to rescue his girlfriend from a giant gorilla called Donkey Kong. In order to get to his girlfriend, Mario needs to climb the unbroken ladders and omit the barrels. In addition, if Mario grabs the hammer, he can hit the barrels. 
+
+<p align="center">
+  <img src="https://github.com/OptimalAgents/RL-DonkeyKong/blob/main/donkey_kong.png" alt="Donkey Kong screenshot"/>
+</p>
+
+We made this project for a Case Study course at Warsaw University of Technology. Here is the repository for this course:
+[https://github.com/PrzeChoj/2024Lato-WarsztatyBadawcze](https://github.com/PrzeChoj/2024Lato-WarsztatyBadawcze)
+
+# Team members
+* Jakub Grzywaczewski ([@ZetrextJG](https://github.com/ZetrextJG))
+* Anna Ostrowska ([@annaostrowska03](https://github.com/annaostrowska03))
+* Igor Rudolf ([@IgorRudolf](https://github.com/IgorRudolf))
+* Marta Szuwarska ([@szuvarska](https://github.com/szuvarska))
+
+# Function execution guide
+
+This guide provides instructions on how to execute the functions included in this repository.
+
+## Training agent
+
+## Playing the game
+
+## Evaluation
+
+# Directory guide
+
+## Structure
+
+## Description of directories
 
 ## Notes
 
