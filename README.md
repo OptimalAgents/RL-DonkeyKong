@@ -36,6 +36,13 @@ If you want to play the game, run `play.py`. Start the game with `space` and mov
     ├── eval_rewards
     ├── plots
     ├── reward_plots.ipynb
+├── runs
+├── scripts
+    ├── total_stes_20k
+    ├── total_steps_2m
+    ├── exp1.sh
+    ├── exp2.sh
+    ├── methods_to_check
 ├── src
     ├── methods
     │   ├── __init__.py
@@ -60,6 +67,8 @@ If you want to play the game, run `play.py`. Start the game with `space` and mov
 
 * reward_plots - directory with data and code for generating plots of reward over time including the plots.
 * src - directory with all the code needed to train the agent.
+* runs - results of running the scripts in directory `scripts`.
+* scripts - scripts launching `main.py` with appropriate parameters.
 * videos_for_presentation - directory with all the videos of the trained agent "playing" the game used in `presentation.pptx`.
 
 ## Notes
