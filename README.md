@@ -73,3 +73,12 @@ If you want to play the game, run `play.py`. Start the game with `space` and mov
 4. Ewaluowac go po n-episodów, ale wtedy epsilon musi byc 0. Nie może być niedeterministyczny, chcemy mieć pewność, że to co się dzieje to wynik tego co model nauczył się do tej pory.
 5. Dodać trackowanie eksperymentów przez TensorBoard
 6. Może ustalić mu duża nagrodę za checkpointy, żeby szybciej się uczył?
+
+
+## Notes JG
+
+- Agents cannot take random actions. Exploration is done by epsilon exploitation outside the agent code.
+- State is "rgb_array" and "human" is exaclty the same, but the "human" mode allows for displaying the progress
+- Negative reward = punishment
+
+

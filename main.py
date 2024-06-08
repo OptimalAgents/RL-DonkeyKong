@@ -1,82 +1,178 @@
+from pathlib import Path
 import numpy as np
-import gymnasium as gym
-from typing import List, Tuple
+import argparse
+import json
+from datetime import datetime
+from src.action_prob import HeuristicActions, UniformActions
+from src.agents.dqn import DeepQLearningAgent
+from src.agents.qlearning import QLearningAgent
+from src.agents.sarsa import SARSAAgent
+from tqdm.auto import tqdm
 
-from gymnasium.utils.play import play
-
-from src.Agents import SARSAAgent
-from src.env import create_playable_env, QLearningAgent, train_q_learning_agent, ActionProbabilityModifier, \
-    preprocess_observation, IncentiveLadder, train_sarsa_agent
-from src.utils import find_mario, CustomActions
-from PIL import Image
-
-from gymnasium.wrappers import TransformReward
-from stable_baselines3.common.atari_wrappers import EpisodicLifeEnv
-
-from src.env import LevelIncentive, PunishDeath, PunishNeedlessJump, IncentiveMagicStars
-from src.utils import is_barrel_near, find_barrels, find_mario, ladder_close
-
-BARREL_COLOR = np.array((236, 200, 96))
-TORCH_MASK = np.zeros((210, 160))
-TORCH_MASK[68:75, 40:42] = 1
-
-MARIO_COLOR = np.array((200, 72, 72))
+from src.envs.base import (
+    build_base_env,
+    convert_to_eval_env,
+    convert_to_trainable_env,
+)
 
 
-def create_wrapped_env() -> gym.Env:
-    env = gym.make("ALE/DonkeyKong-v5", render_mode="human")  # Ustaw render_mode na "human"
-    env.action_space = gym.spaces.Discrete(len(CustomActions))  # Only 4 custom actions
-    env = EpisodicLifeEnv(env)
-    env = LevelIncentive(env)
-    env = IncentiveLadder(env)
-    env = PunishDeath(env)
-    env = PunishNeedlessJump(env)
-    env = IncentiveMagicStars(env)
-    env = TransformReward(env, lambda r: r / 10.0)
-    return env
+def linear_schedule(start_e: float, end_e: float, duration: int, t: int):
+    slope = (end_e - start_e) / duration
+    return max(slope * t + start_e, end_e)
 
 
-def main(algorithm="q_learning"):
-    env = create_wrapped_env()
-    state_shape = 1000  # Reduced state space size
+def eval_agent(agent, env):
+    obs, _ = env.reset(seed=44)
+    done = False
+    while not done:
+        action = agent.predict_action(obs)
+        obs, reward, termination, truncation, info = env.step(action)
 
-    if algorithm == "q_learning":
-        agent = QLearningAgent(env.action_space, state_shape)
-        train_agent = train_q_learning_agent
-    elif algorithm == "sarsa":
-        agent = SARSAAgent(env.action_space, state_shape)
-        train_agent = train_sarsa_agent
+        done = termination or truncation
+    total_reward = info["episode"]["r"]
+
+    print(f"Eval episode finished with reward: {total_reward}")
+    return total_reward
+
+
+def create_env_from_args(args, **kwargs):
+    return build_base_env(
+        level_incentive=args.level_incentive,
+        ladder_incentive=args.ladder_incentive,
+        magic_stars_incentive=args.stars_incentive,
+        punish_death=args.punish_death,
+        punish_needless_jump=args.punish_needless_jump,
+        **kwargs,
+    )
+
+
+def main():
+    parser = argparse.ArgumentParser(prog="PROG")
+    parser.add_argument("--agent", default="dqn", type=str)
+    parser.add_argument("--gamma", default=0.99, type=float)
+    parser.add_argument("--total_steps", default=1_000_000, type=int)
+    parser.add_argument("--eval_every", default=10_000, type=int)
+    parser.add_argument("--training_starts", default=84_000, type=int)
+    parser.add_argument("--epsilon_start", default=1, type=float)
+    parser.add_argument("--epsilon_end", default=0.05, type=float)
+    parser.add_argument("--epsilon_duration", default=0.3, type=float)
+    parser.add_argument("--ladder_incentive", action=argparse.BooleanOptionalAction)
+    parser.add_argument("--level_incentive", action=argparse.BooleanOptionalAction)
+    parser.add_argument("--stars_incentive", action=argparse.BooleanOptionalAction)
+    parser.add_argument("--punish_death", action=argparse.BooleanOptionalAction)
+    parser.add_argument("--punish_needless_jump", action=argparse.BooleanOptionalAction)
+    parser.add_argument("--heuristic_actions", action=argparse.BooleanOptionalAction)
+
+    args = parser.parse_args()
+
+    # Create run dir
+    date_str = datetime.now().strftime("%Y%m%d-%H%M%S")
+    run_dir = Path(f"./runs/{date_str}")
+    run_dir.mkdir(parents=True, exist_ok=True)
+    videos_dir = run_dir / "videos"
+    videos_dir.mkdir(parents=True, exist_ok=True)
+
+    # Save config
+    with open(run_dir / "config.json", "w") as f:
+        json.dump(vars(args), f)
+
+    # Create env
+    base_env = create_env_from_args(args)
+    env = convert_to_trainable_env(base_env)
+    eval_env = convert_to_eval_env(create_env_from_args(args), videos_dir)
+
+    # Create agent
+    if args.agent == "dqn":
+        agent = DeepQLearningAgent(
+            env.action_space,
+            observation_space=env.observation_space,
+            gamma=args.gamma,
+            train_start=args.training_starts,
+        )
+    elif args.agent == "q_learning":
+        agent = QLearningAgent(env.action_space)
+    elif args.agent == "sarsa":
+        agent = SARSAAgent(env.action_space)
     else:
-        raise ValueError("Unknown algorithm. Use 'q_learning' or 'sarsa'.")
+        raise ValueError("Unknown agent. Use 'dqn', 'q_learning' or 'sarsa'.")
 
-    num_evolutions = 10
-    episodes_per_evolution = 100
+    # Action sampler
+    if args.heuristic_actions:
+        action_sampler = HeuristicActions()
+    else:
+        action_sampler = UniformActions()
 
-    for evolution in range(num_evolutions):
-        print(f"Starting evolution {evolution + 1}/{num_evolutions}")
-        # Train the agent with the chosen algorithm
-        trained_agent = train_agent(env, agent, num_episodes=episodes_per_evolution)
+    # Training loop
+    eval_rewards = []
+    obs, _ = env.reset(seed=44)
+    for global_step in tqdm(range(args.total_steps)):
+        epsilon = linear_schedule(
+            args.epsilon_start,
+            args.epsilon_end,
+            args.epsilon_duration * args.total_steps,
+            global_step,
+        )
+        if np.random.rand() < epsilon:
+            # Epsilon exploration
+            action = action_sampler.choose_action(env.snapshot)
+        else:
+            action = agent.predict_action(obs)
 
-        # Evaluate the agent after each evolution
-        print(f"Evaluating agent after evolution {evolution + 1}/{num_evolutions}")
-        observation, info = env.reset()
-        total_reward = 0
-        max_steps_per_episode = 1000
+        next_obs, reward, termination, truncation, info = env.step(action)
+        done = termination or truncation
 
-        for step in range(max_steps_per_episode):
-            state = preprocess_observation(observation)
-            action = trained_agent.choose_action(state)
-            observation, reward, terminated, truncated, info = env.step(action)
-            total_reward += reward
+        real_next_obs = next_obs
 
-            env.render()  # Render each step to display the game
+        if args.agent == "sarsa":
+            next_action = agent.predict_action(real_next_obs)
+            agent.process_experience(
+                obs,
+                np.asarray([action]),
+                np.asarray([reward]),
+                real_next_obs,
+                next_action=np.asarray([next_action]),
+            )
+        elif args.agent == "q_learning":
+            agent.process_experience(
+                obs, np.asarray([action]), np.asarray([reward]), real_next_obs
+            )
+        elif args.agent == "dqn":
+            agent.process_experience(
+                obs,
+                np.asarray([action]),
+                np.asarray([reward]),
+                real_next_obs,
+                done=np.asarray([done]),
+                info=info,
+            )
 
-            if terminated or truncated:
-                break
+        # TRY NOT TO MODIFY: CRUCIAL step easy to overlook
+        obs = next_obs
 
-        print(f"Total reward after evolution {evolution + 1}: {total_reward}")
+        agent.step_end_callback(global_step)
+        if done:
+            print(f"Training episode finished with reward: {info['episode']['r']}")
+            obs, _ = env.reset(seed=44)
+
+        # Eval step
+        if global_step % args.eval_every == 0:
+            eval_rewards.append(eval_agent(agent, eval_env))
+
+    # Last eval
+    eval_rewards.append(eval_agent(agent, eval_env))
+
+    env.close()
+    eval_env.close()
+
+    # Save agent
+    if args.agent == "dqn":
+        agent.save(run_dir / "agent.pth")
+    else:
+        agent.save(run_dir / "agent.npy")
+
+    # Save eval rewards
+    np.save(run_dir / "eval_rewards.npy", np.array(eval_rewards))
 
 
 if __name__ == "__main__":
-    main("q_learning")
-    
+    main()

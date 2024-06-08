@@ -162,3 +162,6 @@ cython_debug/
 # Custom
 models
 
+# Ignore models and .npy files
+agent.pth
+agent.npy
