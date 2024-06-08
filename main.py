@@ -1,5 +1,20 @@
 import numpy as np
 import gymnasium as gym
+from typing import List, Tuple
+
+from gymnasium.utils.play import play
+
+from src.Agents import SARSAAgent
+from src.env import create_playable_env, QLearningAgent, train_q_learning_agent, ActionProbabilityModifier, \
+    preprocess_observation, IncentiveLadder, train_sarsa_agent
+from src.utils import find_mario, CustomActions
+from PIL import Image
+
+from gymnasium.wrappers import TransformReward
+from stable_baselines3.common.atari_wrappers import EpisodicLifeEnv
+
+from src.env import LevelIncentive, PunishDeath, PunishNeedlessJump, IncentiveMagicStars
+from src.utils import is_barrel_near, find_barrels, find_mario, ladder_close
 
 BARREL_COLOR = np.array((236, 200, 96))
 TORCH_MASK = np.zeros((210, 160))
@@ -7,86 +22,61 @@ TORCH_MASK[68:75, 40:42] = 1
 
 MARIO_COLOR = np.array((200, 72, 72))
 
-LADDER_MASK = np.zeros((210, 160))
-LADDER_MASK[160:196, 106:112] = 1  # First level
-LADDER_MASK[128:169, 79:84] = 1  # Second level
-LADDER_MASK[132:160, 47:53] = 1  # Second level
-LADDER_MASK[102:140, 87:92] = 1  # Third level
-LADDER_MASK[104:137, 108:112] = 1  # Third level
-LADDER_MASK[74:112, 67:72] = 1  # Fourth level
-LADDER_MASK[71:110, 48:52] = 1  # Fourth level
-LADDER_MASK[45:82, 107:112] = 1  # Fifth level
-LADDER_MASK[20:60, 76:80] = 1  # Sixth level
-LADDER_MASK[20:60, 32:36] = 1  # Sixth level
+
+def create_wrapped_env() -> gym.Env:
+    env = gym.make("ALE/DonkeyKong-v5", render_mode="human")  # Ustaw render_mode na "human"
+    env.action_space = gym.spaces.Discrete(len(CustomActions))  # Only 4 custom actions
+    env = EpisodicLifeEnv(env)
+    env = LevelIncentive(env)
+    env = IncentiveLadder(env)
+    env = PunishDeath(env)
+    env = PunishNeedlessJump(env)
+    env = IncentiveMagicStars(env)
+    env = TransformReward(env, lambda r: r / 10.0)
+    return env
 
 
-def find_barrels(observation: np.ndarray) -> list[tuple[int, int]]:
-    barrels = []
-    barrels_mask = np.all(observation == BARREL_COLOR, axis=-1)
-    barrels_mask = np.logical_and(barrels_mask, np.logical_not(TORCH_MASK))
-    while np.any(barrels_mask):
-        xs, ys = np.where(barrels_mask)
-        x, y = xs[0], ys[0]
+def main(algorithm="q_learning"):
+    env = create_wrapped_env()
+    state_shape = 1000  # Reduced state space size
 
-        x_start, x_end = max(x - 8, 0), min(x + 8, 210)
-        y_start, y_end = max(y - 8, 0), min(y + 8, 160)
-        search_space = np.zeros((210, 160))
-        search_space[x_start: (x_end + 1), y_start: (y_end + 1)] = 1
+    if algorithm == "q_learning":
+        agent = QLearningAgent(env.action_space, state_shape)
+        train_agent = train_q_learning_agent
+    elif algorithm == "sarsa":
+        agent = SARSAAgent(env.action_space, state_shape)
+        train_agent = train_sarsa_agent
+    else:
+        raise ValueError("Unknown algorithm. Use 'q_learning' or 'sarsa'.")
 
-        current_barrel = np.logical_and(barrels_mask, search_space)
+    num_evolutions = 10
+    episodes_per_evolution = 100
 
-        xs, ys = np.where(current_barrel)
-        barrels.append((int(np.mean(xs[0])), int(np.mean(ys[0]))))
-        barrels_mask = np.logical_and(barrels_mask, np.logical_not(current_barrel))
+    for evolution in range(num_evolutions):
+        print(f"Starting evolution {evolution + 1}/{num_evolutions}")
+        # Train the agent with the chosen algorithm
+        trained_agent = train_agent(env, agent, num_episodes=episodes_per_evolution)
 
-    return barrels
+        # Evaluate the agent after each evolution
+        print(f"Evaluating agent after evolution {evolution + 1}/{num_evolutions}")
+        observation, info = env.reset()
+        total_reward = 0
+        max_steps_per_episode = 1000
 
+        for step in range(max_steps_per_episode):
+            state = preprocess_observation(observation)
+            action = trained_agent.choose_action(state)
+            observation, reward, terminated, truncated, info = env.step(action)
+            total_reward += reward
 
-def find_mario(observation: np.ndarray) -> tuple[int, int]:
-    mario_mask = np.all(observation == MARIO_COLOR, axis=-1)
-    xs, ys = np.where(mario_mask)
-    return int(np.mean(xs)), int(np.mean(ys))
+            env.render()  # Render each step to display the game
 
+            if terminated or truncated:
+                break
 
-def ladder_close(observation: np.ndarray) -> bool:
-    mario_coords = find_mario(observation)
-    if LADDER_MASK[mario_coords[0], mario_coords[1]] == 1:
-        return True
-    return False
-
-
-def main():
-    env = gym.make("ALE/DonkeyKong-v5", render_mode="human")
-    observation, info = env.reset()
-    # env.env.ale.saveScreenPNG(b'test_image.png')  # save screenshot
-    observation, reward, terminated, truncated, info = env.step(1)
-    climbing = False
-    climbed_ladders = 0
-    for i in range(1000):
-        if ladder_close(observation):
-            action = 10
-            climbing = True
-        else:
-            if climbing:
-                climbed_ladders += 1
-                climbing = False
-            if climbed_ladders % 2 == 0:
-                action = 3
-            else:
-                action = 4
-        print(i)
-        print(climbed_ladders)
-        observation, reward, terminated, truncated, info = env.step(action)
-
-    # for i in range(1000):
-    #     action = env.action_space.sample()
-    #     observation, reward, terminated, truncated, info = env.step(action)
-    #
-    #     if terminated or truncated:
-    #         observation, info = env.reset()
-    #
-    # env.close()
+        print(f"Total reward after evolution {evolution + 1}: {total_reward}")
 
 
 if __name__ == "__main__":
-    main()
+    main("q_learning")
+    
