@@ -25,7 +25,7 @@ If you want to train the agent, just run the `main.py` script. You can choose th
 
 ## Playing the game
 
-If you want to play the game, run `play.py`. Start the game with `space` and move Mario using `W`, `S`, `A` and `D` keys.
+If you want to play the game, run `play.py`. Start the game with `space` and move Mario using `W`, `S`, `A` and `D` keys. After starting the game, use `space` for jumping.
 
 # Directory guide
 
