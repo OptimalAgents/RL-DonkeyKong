@@ -59,6 +59,7 @@ If you want to play the game, run `play.py`. Start the game with `space` and mov
 ├── main.py
 ├── play.py
 ├── presentation.pptx
+├── report.pdf
 ├── requirements.txt
 ```
 
